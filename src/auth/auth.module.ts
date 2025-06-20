@@ -7,11 +7,13 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guards';
 import { ConfigService } from '@nestjs/config';
+import { Patient } from './entities/patient.entity';
+import { Doctor } from './entities/doctor.entity';
 
 @Module({
   providers: [AuthService,JwtService,JwtStrategy,JwtAuthGuard,ConfigService],
   controllers: [AuthController],
-  imports: [TypeOrmModule.forFeature([User])]
+  imports: [TypeOrmModule.forFeature([User,Patient,Doctor])]
  
 })
 export class AuthModule {}

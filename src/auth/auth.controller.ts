@@ -4,6 +4,9 @@ import { registerUserDto } from './Dto/register-user.dto';
 import { loginUserDto } from './Dto/login-user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guards';
 import { Request, Response } from 'express';
+import { RolesGuard } from './guards/roles.guard';
+import { Role } from './enums/role.enum';
+import { Roles } from './decorators/custom.role.decorator';
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -51,9 +54,10 @@ export class AuthController {
   }
 
 
-  
+   @Get('profile/:id')
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.DOCTOR)
   getProfile(@Param('id', ParseUUIDPipe) id: string) {
      return this.usersService.findUserById(id);
   }

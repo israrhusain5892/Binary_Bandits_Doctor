@@ -1,17 +1,43 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Role } from "../enums/role.enum";
+import { Patient } from "./patient.entity";
+import { Doctor } from "./doctor.entity";
 
 @Entity("user")
-export class User{
-     @PrimaryGeneratedColumn('uuid')
-     userId:string;
+export class User {
+    @PrimaryGeneratedColumn('uuid')
+    userId: string;
 
     @Column()
-    name:string;
+    name: string;
 
     @Column({ type: 'varchar', length: 500, unique: true })
-    email:string;
+    email: string;
 
     @Column()
-    password:string;
+    password: string;
+
+    @CreateDateColumn()
+    created_at: Date;
+
+    @UpdateDateColumn()
+    updated_at: Date;
+
+    @Column({
+        type: 'enum',
+        enum: Role,
+        default: Role.USER
+
+    })
+    role: Role;
+
+    @OneToOne(() => Patient, (patient) => patient.user)
+    patient: Patient;
+
+    @OneToOne(() => Doctor, (doctor) => doctor.user)
+    doctor: Doctor;
+
+
+
 
 }

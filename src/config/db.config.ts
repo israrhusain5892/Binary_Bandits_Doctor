@@ -2,6 +2,8 @@
 import { User } from 'src/auth/entities/user.entity';
 import {PostgresConnectionOptions} from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { registerAs } from '@nestjs/config';
+import { Doctor } from 'src/auth/entities/doctor.entity';
+import { Patient } from 'src/auth/entities/patient.entity';
 export default registerAs  (
   'dbconfig.dev',
   ():PostgresConnectionOptions=>({
@@ -11,7 +13,7 @@ export default registerAs  (
     username: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
-    entities: [User],
+    entities: [User,Patient,Doctor],
     synchronize: true,
   })
 
