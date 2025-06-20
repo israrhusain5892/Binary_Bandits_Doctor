@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, Res, Unauthoriz
 import { AuthService } from './auth.service';
 import { registerUserDto } from './Dto/register-user.dto';
 import { loginUserDto } from './Dto/login-user.dto';
-import { JwtAuthGuard } from './jwt-auth.guards';
+import { JwtAuthGuard } from './guards/jwt-auth.guards';
 import { Request, Response } from 'express';
 
 @Controller('/api/v1/auth')
@@ -21,7 +21,7 @@ export class AuthController {
     const user= this.usersService.login(dto);
    
     const{tokens}=await this.usersService.login(dto);
-     console.log(tokens.refreshToken)
+  
     res.cookie('refresh_token',tokens.refreshToken,{
       httpOnly:true,
       sameSite:'lax',
