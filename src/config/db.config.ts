@@ -3,13 +3,13 @@ import { User } from 'src/auth/entities/user.entity';
 import {PostgresConnectionOptions} from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { registerAs } from '@nestjs/config';
 export default registerAs  (
-  'dbconfig',
+  'dbconfig.dev',
   ():PostgresConnectionOptions=>({
   type: 'postgres',
     host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432', 10),
+    port: parseInt(process.env.DB_PORT || '5433', 10),
     username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     entities: [User],
     synchronize: true,

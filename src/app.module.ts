@@ -14,37 +14,13 @@ import dbConfig from './config/db.config';
   imports: [
     ConfigModule.forRoot({ isGlobal: true,expandVariables:true,load:[dbConfig,dbConfigProduction] }),
     TypeOrmModule.forRootAsync({
-       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const config = configService.get('dbconfig');
-        if (!config) {
-          throw new Error('Database config not loaded!');
-        }
-        return config;
-      },
-      
-    }),
-//     TypeOrmModule.forRoot({
-
- 
-//     type: 'postgres', // or your preferred DB
-//     host: 'localhost',
-//     port: 5433,
-//     username: 'postgres',
-//     password: '123456',
-//     database: 'doctor',
-//     autoLoadEntities: true,
-//     synchronize: true,
-//     entities:[User]
- 
- 
-// }),
-
-    HelloWorldModule, AuthModule
+      useFactory:
+      process.env.NODE_ENV==='production'?dbConfigProduction:dbConfig
+      }),
+     HelloWorldModule, AuthModule
   ],
   
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-console.log(process.env.DB_PASSWORD);
