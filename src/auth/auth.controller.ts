@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 import { RolesGuard } from './guards/roles.guard';
 import { Role } from './enums/role.enum';
 import { Roles } from './decorators/custom.role.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -17,6 +18,13 @@ export class AuthController {
   create(@Body() dto: registerUserDto) {
     return this.usersService.create(dto);
   }
+
+
+   @Post('create-role')
+  createRole(@Body() user: User) {
+    return this.usersService.create(user);
+  }
+
 
 
   @Post('signin')
@@ -54,10 +62,11 @@ export class AuthController {
   }
 
 
-   @Get('profile/:id')
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  
+  
+  @UseGuards(JwtAuthGuard,RolesGuard)
   @Roles(Role.DOCTOR)
+   @Get('profile/:id')
   getProfile(@Param('id', ParseUUIDPipe) id: string) {
      return this.usersService.findUserById(id);
   }

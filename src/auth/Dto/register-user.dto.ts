@@ -2,6 +2,7 @@ import { Column } from "typeorm";
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
 import { Role } from "../enums/role.enum";
+import { defaultMaxListeners } from "stream";
 
 export class registerUserDto{
     
@@ -19,8 +20,8 @@ export class registerUserDto{
         @IsNotEmpty({message:"password is required!!"})
         @MinLength(8, {
          message: `Password must be at least 8 characters, but actual is $value` })
-        password:string;
+         password:string;
 
-        @IsString({message:"role should be in string"})
-        role:Role;
+         
+       
 }
