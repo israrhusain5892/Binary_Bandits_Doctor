@@ -8,6 +8,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { Role } from './enums/role.enum';
 import { Roles } from './decorators/custom.role.decorator';
 import { User } from './entities/user.entity';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guards';
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -20,44 +21,23 @@ export class AuthController {
   }
 
 
-   @Post('create-role')
-  createRole(@Body() user: User) {
-    return this.usersService.create(user);
-  }
-
-
-
   @Post('signin')
   async login(@Body() dto: loginUserDto,@Res({passthrough:true}) res:Response) {
-    const user= this.usersService.login(dto);
-   
-    const{tokens}=await this.usersService.login(dto);
-  
-    res.cookie('refresh_token',tokens.refreshToken,{
-      httpOnly:true,
-      sameSite:'lax',
-      secure:false,
-      path:'/api/v1/auth/refresh',
-      maxAge:7*24*60*60*1000
-    })
-    return user;
+    return await this.usersService.login(dto);
+    
   }
 
-
+  @UseGuards(JwtRefreshGuard)
   @Get('refresh')
-  async refresh(@Req() req:Request,@Res() res:Response){
-    const refreshToken=req.cookies['refresh_token'];
-    if(refreshToken){
-      throw new UnauthorizedException("No refresh token found")
-    }
-    const access_token=this.usersService.getAccessTokenFromRefresh(refreshToken);
-    return res.json({access_token});
+  async refresh(@Req() req){
+      return await this.usersService.refreshToken(req.user.userId);
+    
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
-  logout(@Res() res:Response){
-    res.clearCookie('refresh_token',{path:'/api/v1/auth/refresh'});
+  logout(@Res() res:Response,@Req() req){
+    this.usersService.signOut(req.user.userId)
     return res.json({message:"Logged out successfully!!"});
   }
 
@@ -68,7 +48,7 @@ export class AuthController {
   @Roles(Role.DOCTOR)
    @Get('profile/:id')
   getProfile(@Param('id', ParseUUIDPipe) id: string) {
-     return this.usersService.findUserById(id);
+     return this.usersService.validateJwtUser(id);
   }
 
 }

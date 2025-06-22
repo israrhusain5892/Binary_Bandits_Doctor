@@ -4,9 +4,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
+import { Request } from 'express';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt') {
   constructor(
     private config: ConfigService,
     private usersService: AuthService,
@@ -14,16 +15,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
+      passReqToCallback:true,
       secretOrKey: "super-secret-key",
       algorithms: ['HS256'],  
     });
   }
 
-  async validate(payload: any) {
-    const user = await this.usersService.validateJwtUser(payload.sub);
-    if (!user) {
-      throw new UnauthorizedException('Invalid token');
-    }
-    return user; // attaches `user` to `req.user`
+  async validate(req:Request,payload: any) {
+    const refreshToken=req.get('authorization')?.replace('Bearer','').trim();
+    const userId=payload.sub;
+    return this.usersService.validateRefreshToken(userId,refreshToken);
   }
 }

@@ -11,9 +11,12 @@ import { Patient } from './entities/patient.entity';
 import { Doctor } from './entities/doctor.entity';
 import jwtConfig from 'src/config/jwt.config';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
+import { RefreshJwtStrategy } from './strategy/refresh-jwt.strategy';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guards';
 
 @Module({
-  providers: [AuthService, JwtService, JwtStrategy, JwtAuthGuard, ConfigService],
+  providers: [AuthService, JwtService, JwtStrategy,RefreshJwtStrategy,
+    JwtRefreshGuard, JwtAuthGuard, ConfigService],
   controllers: [AuthController],
   imports: [
     TypeOrmModule.forFeature([User, Patient, Doctor]),

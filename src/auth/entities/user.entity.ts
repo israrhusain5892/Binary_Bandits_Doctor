@@ -17,6 +17,9 @@ export class User {
     @Column()
     password: string;
 
+     @Column({nullable:true})
+     avatarUrl: string;
+
     @CreateDateColumn()
     created_at: Date;
 
@@ -26,10 +29,14 @@ export class User {
     @Column({
         type: 'enum',
         enum: Role,
-        default: Role.USER
+        default: Role.PATIENT
 
     })
     role: Role;
+
+    @Column({nullable:true})
+    refresh_Token:string;
+
 
     @OneToOne(() => Patient, (patient) => patient.user)
     patient: Patient;

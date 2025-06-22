@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import jwtConfig from 'src/config/jwt.config';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
+import *as bcrypt from "bcrypt";
 @Injectable()
 export class AuthService {
 
@@ -23,6 +24,8 @@ export class AuthService {
     @Inject(refreshJwtConfig.KEY)
     private readonly refreshJwtTokenConfig: ConfigType<typeof refreshJwtConfig>,
   ) { }
+
+
   // by defualt it register user with user role
   async create(registerUserDto: registerUserDto) {
     const existingUser = await this.userRepository.findOne({ where: { email: registerUserDto.email } });
@@ -35,18 +38,7 @@ export class AuthService {
     return savedUser;
 
   }
-  // this for registering user with any role like admin role ,patient and doctor
-  async createRole(user: User) {
-    const existingUser = await this.userRepository.findOne({ where: { email: user.email } });
-    if (existingUser) {
-      throw new ConflictException(`This User role already registered with Email ${existingUser.email}`);
-    }
-    const hashedPassword = await bcryptjs.hash(user.password, 10);
-    const createUser = this.userRepository.create({ ...registerUserDto, password: hashedPassword });
-    const savedUser = this.userRepository.save(createUser);
-    return savedUser;
 
-  }
   async login(loginUserDto: loginUserDto) {
     const findUser = await this.userRepository.findOne({ where: { email: loginUserDto.email } });
     if (!findUser) {
@@ -56,12 +48,16 @@ export class AuthService {
     if (!bcryptjs.compare(hashedPassword, loginUserDto.password)) {
       throw new UnauthorizedException("User authentication unauthorized");
     }
-    const tokens = await this.generateJwtTokens(findUser);
+    const { accessToken, refreshToken } = await this.generateJwtTokens(findUser);
     // not send password to client
+    const hashedRefresahToken = bcrypt.hash(refreshToken, 10)
+    await this.updateRefeshTokenInDB(findUser.userId, hashedRefresahToken);
     const { password, ...user } = findUser;
+
     return {
       user: user,
-      tokens: tokens,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       message: "login successfully"
     }
   }
@@ -73,10 +69,10 @@ export class AuthService {
       expiresIn: this.jwtTokenConfig.signOptions?.expiresIn,
     });
     // refresh token
-    const refreshToken = await this.jwtService.signAsync( payload,{
-        secret:this.refreshJwtTokenConfig.secret,
-        expiresIn:this.refreshJwtTokenConfig.signOptions?.expiresIn
-        })
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.refreshJwtTokenConfig.secret,
+      expiresIn: this.refreshJwtTokenConfig.signOptions?.expiresIn
+    })
 
     return {
       accessToken: accessToken,
@@ -85,8 +81,12 @@ export class AuthService {
   }
 
 
+  async updateRefeshTokenInDB(userId: string, refresh_Token: any) {
+    return await this.userRepository.update({ userId: userId }, { refresh_Token });
+  }
 
-  async findUserById(userId: string) {
+
+  async validateJwtUser(userId: string) {
     const user = this.userRepository.findOne({ where: { userId: userId } });
     if (!user) {
       throw new NotFoundException("user not found by Id to validate");
@@ -95,17 +95,41 @@ export class AuthService {
   }
 
 
-  async getAccessTokenFromRefresh(refreshToken: any) {
+  async refreshToken(id: string) {
     try {
-      const payload = await this.jwtService.verify(refreshToken);
-      const access_token = this.jwtService.sign({ sub: payload.sub, email: payload.email, role: payload.role }, { expiresIn: '15m' });
-      return access_token;
+      const user = await this.userRepository.findOne({ where: { userId: id } });
+      const { refreshToken, accessToken } = await this.generateJwtTokens(user);
+      await this.updateRefeshTokenInDB(id, bcrypt.hash(refreshToken, 10));
+      return {
+        user: user,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+
+      }
 
     }
     catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+  }
+
+  async validateRefreshToken(userId: string, refresh_Token: any) {
+
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user || !user.refresh_Token) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    const isMatchRefreshToken = bcrypt.compare(refresh_Token, user.refresh_Token);
+    if (!isMatchRefreshToken) {
+      throw new UnauthorizedException("Invalid refresh Token");
+    }
+    return user;
+  }
+
+  async signOut(userId: string) {
+    await this.updateRefeshTokenInDB(userId, null);
   }
 
 }
