@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { loginUserDto } from './Dto/login-user.dto';
-import *as bcryptjs from "bcryptjs";
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import jwtConfig from 'src/config/jwt.config';
@@ -12,6 +11,7 @@ import refreshJwtConfig from 'src/config/refresh-jwt.config';
 import *as bcrypt from "bcrypt";
 @Injectable()
 export class AuthService {
+
 
 
   constructor(
@@ -32,7 +32,7 @@ export class AuthService {
     if (existingUser) {
       throw new ConflictException(`User already registered with Email ${existingUser.email}`);
     }
-    const hashedPassword = await bcryptjs.hash(registerUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
     const user = this.userRepository.create({ ...registerUserDto, password: hashedPassword });
     const savedUser = this.userRepository.save(user);
     return savedUser;
@@ -45,7 +45,7 @@ export class AuthService {
       throw new NotFoundException("User not registered!!");
     }
     const hashedPassword = findUser.password;
-    if (!bcryptjs.compare(hashedPassword, loginUserDto.password)) {
+    if (!bcrypt.compare(hashedPassword, loginUserDto.password)) {
       throw new UnauthorizedException("User authentication unauthorized");
     }
     const { accessToken, refreshToken } = await this.generateJwtTokens(findUser);
@@ -61,6 +61,7 @@ export class AuthService {
       message: "login successfully"
     }
   }
+
 
   async generateJwtTokens(user: any) {
     const payload = { sub: user.userId, email: user.email, role: user.role };
@@ -128,8 +129,28 @@ export class AuthService {
     return user;
   }
 
+
+
   async signOut(userId: string) {
     await this.updateRefeshTokenInDB(userId, null);
+  }
+
+
+  async validateGoogleUser(profileData:registerUserDto) {
+    const email = profileData.email;
+    let user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      const newUser = this.userRepository.create(profileData);
+      await this.userRepository.save(newUser);
+      throw new NotFoundException("Account is registered via Google. Please login with Google")
+    }
+
+    const payload = { sub: user.userId,email:user.email, role: user.role };
+    const {accessToken} = await this.generateJwtTokens(payload);
+
+    return { ...user, accessToken: accessToken };
+   
   }
 
 }

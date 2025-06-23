@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, Upd
 import { Role } from "../enums/role.enum";
 import { Patient } from "./patient.entity";
 import { Doctor } from "./doctor.entity";
+import { Provider } from "../enums/provider.enum";
 
 @Entity("user")
 export class User {
@@ -14,7 +15,7 @@ export class User {
     @Column({ type: 'varchar', length: 500, unique: true })
     email: string;
 
-    @Column()
+    @Column({nullable:true,default:null})
     password: string;
 
      @Column({nullable:true})
@@ -25,6 +26,14 @@ export class User {
 
     @UpdateDateColumn()
     updated_at: Date;
+
+    @Column({
+        type: 'enum',
+        enum: Provider,
+        default: Provider.Local
+        }
+    )
+    provider:Provider
 
     @Column({
         type: 'enum',

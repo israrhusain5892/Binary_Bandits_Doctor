@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import { IS_OPTIONAL, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
 import { Role } from "../enums/role.enum";
 import { defaultMaxListeners } from "stream";
+import { Provider } from "../enums/provider.enum";
 
 export class registerUserDto{
     
@@ -19,13 +20,13 @@ export class registerUserDto{
         @IsOptional()
         avatarUrl:string;
         
-        @IsString({ message: 'Password must be text' }) 
-        @IsNotEmpty({message:"password is required!!"})
-        @MinLength(8, {
-         message: `Password must be at least 8 characters, but actual is $value` })
+         @IsOptional()
          password:string;
 
          @IsOptional()
          role:Role;
+
+         @IsOptional()
+         provider:Provider;
        
 }
