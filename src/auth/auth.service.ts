@@ -146,7 +146,8 @@ export class AuthService {
   }
 
 
-  async validateGoogleUser(profileData: registerUserDto) {
+  
+  async validateGoogleUser(profileData:registerUserDto) {
     const email = profileData.email;
     let user = await this.userRepository.findOne({ where: { email } });
 
@@ -287,7 +288,8 @@ export class AuthService {
 
     }));
 
-  }
-
-
+   }
 }
+
+
+
