@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { registerUserDto } from './Dto/register-user.dto';
 import { loginUserDto } from './Dto/login-user.dto';
@@ -10,6 +10,8 @@ import { Roles } from './decorators/custom.role.decorator';
 import { User } from './entities/user.entity';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guards';
 import { GoogleAuthGuard } from './guards/google-auth.guards';
+import { CreateDoctorDto } from './Dto/create-doctor.dto';
+import { DoctorResponseDto } from './Dto/doctor-response.dto';
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -67,6 +69,33 @@ export class AuthController {
     })
     return res;
 
+  }
+
+  // create doctor
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles(Role.DOCTOR)
+  @Post("add/doctor/profile")
+  async createDocotr(@Body() doctorDto:CreateDoctorDto):Promise<DoctorResponseDto>{
+      return this.usersService.createDoctor(doctorDto);
+  }
+//  serach doctor by name
+  @UseGuards(JwtAuthGuard)
+  @Get("doctor/search")
+  async getDoctorByName(@Query("name") name:string):Promise<DoctorResponseDto[]>{
+         return this.usersService.findByDoctorName(name);
+  }
+  // get doctor profile by unique id
+   @UseGuards(JwtAuthGuard)
+   @Get("doctor/profile/:id")
+   async getDoctorProfile(@Param('id',ParseUUIDPipe) id:string):Promise<DoctorResponseDto | any>{
+       return this.usersService.getDoctorProfile(id)
+   }
+  // get List of doctorrs
+  @UseGuards(JwtAuthGuard)
+  @Get("doctors")
+  async getAllDoctorsList():Promise<DoctorResponseDto[]>{
+       return this.usersService.findAllDoctors();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

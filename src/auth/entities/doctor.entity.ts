@@ -36,6 +36,9 @@ export class Doctor {
   @Column({ type: 'simple-array' })
   available_time_slots: string[];
 
+  @Column({type:'simple-array'})
+  achievements?: string[];
+
   @CreateDateColumn()
   created_at: Date;
 
