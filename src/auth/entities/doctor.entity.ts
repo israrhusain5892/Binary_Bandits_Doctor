@@ -6,8 +6,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
+import { DoctorAvailability } from './doctor-availability';
+import { DoctorTimeSlots } from './doctor-time-slots';
 
 
 @Entity('doctors')
@@ -30,13 +33,8 @@ export class Doctor {
   @Column({ type: 'text' })
   clinic_address: string;
 
+  
   @Column({ type: 'simple-array' })
-  available_days: string[];
-
-  @Column({ type: 'simple-array' })
-  available_time_slots: string[];
-
-  @Column({type:'simple-array'})
   achievements?: string[];
 
   @CreateDateColumn()
@@ -47,6 +45,12 @@ export class Doctor {
 
   // Relations
   @OneToOne(() => User, (user) => user.doctor)
-   @JoinColumn()
-   user:User;
+  @JoinColumn()
+  user: User;
+
+  @OneToMany(() => DoctorAvailability, availability => availability.doctor, { cascade: true })
+  availabilities: DoctorAvailability[];
+
+  @OneToMany(() => DoctorTimeSlots, slot => slot.doctor)
+  timeSlots: DoctorTimeSlots[];
 }

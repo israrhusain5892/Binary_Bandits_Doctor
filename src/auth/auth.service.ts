@@ -2,7 +2,7 @@ import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundExce
 import { registerUserDto } from './Dto/register-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { loginUserDto } from './Dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
@@ -12,6 +12,10 @@ import *as bcrypt from "bcrypt";
 import { CreateDoctorDto } from './Dto/create-doctor.dto';
 import { DoctorResponseDto } from './Dto/doctor-response.dto';
 import { Doctor } from './entities/doctor.entity';
+import { DoctorAvailabilityDto } from './Dto/doctor-availability.dto';
+import { DoctorAvailability } from './entities/doctor-availability';
+import * as moment from 'moment';
+import { DoctorTimeSlots } from './entities/doctor-time-slots';
 @Injectable()
 export class AuthService {
 
@@ -25,6 +29,12 @@ export class AuthService {
 
     @InjectRepository(Doctor)
     private readonly doctorRepo: Repository<Doctor>,
+
+    @InjectRepository(DoctorTimeSlots)
+    private readonly timeSlotsRepo: Repository<DoctorTimeSlots>,
+
+    @InjectRepository(DoctorAvailability)
+    private readonly availabilityRepository: Repository<DoctorAvailability>,
 
     private readonly jwtService: JwtService,
 
@@ -146,8 +156,8 @@ export class AuthService {
   }
 
 
-  
-  async validateGoogleUser(profileData:registerUserDto) {
+
+  async validateGoogleUser(profileData: registerUserDto) {
     const email = profileData.email;
     let user = await this.userRepository.findOne({ where: { email } });
 
@@ -192,8 +202,6 @@ export class AuthService {
       education: saved.education,
       clinic_name: saved.clinic_name,
       clinic_address: saved.clinic_address,
-      available_days: saved.available_days,
-      available_time_slots: saved.available_time_slots,
       achievements: saved.achievements,
       created_at: saved.created_at,
       updated_at: saved.updated_at
@@ -208,7 +216,7 @@ export class AuthService {
     if (!name) {
       return [];
     }
-   
+
     const doctors = await this.doctorRepo.find({
       relations: ['user'],
     });
@@ -226,8 +234,6 @@ export class AuthService {
       education: doctor.education,
       clinic_name: doctor.clinic_name,
       clinic_address: doctor.clinic_address,
-      available_days: doctor.available_days,
-      available_time_slots: doctor.available_time_slots,
       achievements: doctor.achievements,
       created_at: doctor.created_at,
       updated_at: doctor.updated_at
@@ -238,14 +244,14 @@ export class AuthService {
 
   // get doctor by unique id
   async getDoctorProfile(doctor_id: string): Promise<DoctorResponseDto | any> {
-    const doctor = await this.doctorRepo.findOne({ 
-    where: { doctor_id }, 
-    relations: ['user']  // Load the 'user' relation eagerly
-  });
+    const doctor = await this.doctorRepo.findOne({
+      where: { doctor_id },
+      relations: ['user']  // Load the 'user' relation eagerly
+    });
     if (!doctor) {
       return new UnauthorizedException("Doctor not found")
     }
-    
+
     return {
       doctor_id: doctor.doctor_id,
       name: doctor.user.name,
@@ -255,8 +261,6 @@ export class AuthService {
       education: doctor.education,
       clinic_name: doctor.clinic_name,
       clinic_address: doctor.clinic_address,
-      available_days: doctor.available_days,
-      available_time_slots: doctor.available_time_slots,
       achievements: doctor.achievements,
       created_at: doctor.created_at,
       updated_at: doctor.updated_at
@@ -280,15 +284,111 @@ export class AuthService {
       education: doctor.education,
       clinic_name: doctor.clinic_name,
       clinic_address: doctor.clinic_address,
-      available_days: doctor.available_days,
-      available_time_slots: doctor.available_time_slots,
       achievements: doctor.achievements,
       created_at: doctor.created_at,
       updated_at: doctor.updated_at
 
     }));
 
-   }
+  }
+
+
+
+
+  //  Doctor Availability logic here lke create all crud operatiins and pagination
+  // created doctor_availability by doctor itself
+  async createDoctorAvailability(doctor_id: string, availabilityDto: DoctorAvailabilityDto) {
+
+    const doctor = await this.doctorRepo.findOne({ where: { doctor_id } });
+    if (!doctor) {
+      throw new NotFoundException("doctor does not exist");
+    }
+
+
+    const availability = this.availabilityRepository.create({
+      ...availabilityDto,
+      doctor,           // this sets up the relationship
+      doctor_id: doctor.doctor_id  // this sets the foreign key explicitly
+    });
+
+    const timeSlots = await this.createTimeSlots(
+      doctor_id,
+      availabilityDto.date,
+      availabilityDto.start_time,
+      availabilityDto.end_time
+    )
+
+    await this.availabilityRepository.save(availability);
+
+
+
+    return { message: 'Availability created and time slots', availability, timeSlots };
+
+  }
+
+
+  // create time slots method 
+
+  async createTimeSlots(
+    doctorId: string,
+    date: string,
+    start_time: string,
+    end_time: string,
+    slotDuration = 30
+  ) {
+    const start = moment(`${date} ${start_time}`, 'YYYY-MM-DD HH:mm');
+    const end = moment(`${date} ${end_time}`, 'YYYY-MM-DD HH:mm');
+
+    const timeSlots: DoctorTimeSlots[] = [];
+
+    while (start.clone().add(slotDuration, 'minutes').isSameOrBefore(end)) {
+      const slotStart = start.format('HH:mm');
+      const slotEnd = start.clone().add(slotDuration, 'minutes').format('HH:mm');
+
+      // Prevent duplicates
+      const exists = await this.timeSlotsRepo.findOne({
+        where: {
+          doctor_id: doctorId,
+          date,
+          start_time: slotStart
+        }
+      });
+
+      if (!exists) {
+        const slot = this.timeSlotsRepo.create({
+          doctor_id: doctorId,
+          date,
+          start_time: slotStart,
+          end_time: slotEnd,
+          is_available: true
+        });
+        timeSlots.push(slot);
+      }
+
+      start.add(slotDuration, 'minutes');
+    }
+
+    await this.timeSlotsRepo.save(timeSlots);
+    return { message: `${timeSlots.length} slots created`, slots: timeSlots };
+  }
+
+
+  async getAvailableTiemSlotsByDoctorId(doctorId: string, page = 1, limit = 10) {
+    const offset = (page - 1) * limit;
+
+    const slots = await this.timeSlotsRepo.find({
+      where: {
+        doctor_id: doctorId,
+        is_available: true
+      },
+      order: { date: 'ASC', start_time: 'ASC' },
+      skip: offset,
+      take: limit
+    });
+    
+    return {available_time_slots:slots};
+  }
+
 }
 
 

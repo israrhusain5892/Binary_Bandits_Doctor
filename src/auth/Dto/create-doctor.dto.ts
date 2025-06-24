@@ -20,15 +20,6 @@ export class CreateDoctorDto {
   @IsString()
   @IsOptional()
   clinic_address: string;
-
-  
-  @IsNotEmpty({message:"Availability days is required!!"})
-  available_days: string[];
-
-  
-  @IsNotEmpty({message:"Time slots is required!!"})
-  available_time_slots: string[];
-
   
   @IsNotEmpty({message:"achivements is required!!"})
   achievements?: string[];

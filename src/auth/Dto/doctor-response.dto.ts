@@ -9,8 +9,6 @@ export class DoctorResponseDto {
   education: string;
   clinic_name: string;
   clinic_address: string;
-  available_days: string[];
-  available_time_slots: string[];
   achievements?: string[];
   created_at: Date;
   updated_at: Date;

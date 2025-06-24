@@ -14,13 +14,15 @@ import refreshJwtConfig from 'src/config/refresh-jwt.config';
 import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import googleConfig from 'src/config/google.config';
+import { DoctorAvailability } from './entities/doctor-availability';
+import { DoctorTimeSlots } from './entities/doctor-time-slots';
 
 @Module({
   providers: [AuthService, JwtService, JwtStrategy,RefreshJwtStrategy,
     ConfigService,GoogleStrategy],
   controllers: [AuthController],
   imports: [
-    TypeOrmModule.forFeature([User, Patient, Doctor]),
+    TypeOrmModule.forFeature([User, Patient, Doctor,DoctorAvailability,DoctorTimeSlots]),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
