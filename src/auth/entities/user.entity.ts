@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Role } from "../enums/role.enum";
-import { Patient } from "./patient.entity";
-import { Doctor } from "./doctor.entity";
+import { Patient } from "../../patient/entities/patient.entity";
+import { Doctor } from "../../doctor/entities/doctor.entity";
 import { Provider } from "../enums/provider.enum";
 
 @Entity("user")

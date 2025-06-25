@@ -8,7 +8,7 @@ import {
   OneToOne,
   OneToMany,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../auth/entities/user.entity';
 import { DoctorAvailability } from './doctor-availability';
 import { DoctorTimeSlots } from './doctor-time-slots';
 

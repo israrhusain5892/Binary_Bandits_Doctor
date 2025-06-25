@@ -2,10 +2,10 @@
 import { User } from 'src/auth/entities/user.entity';
 import {PostgresConnectionOptions} from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { registerAs } from '@nestjs/config';
-import { Doctor } from 'src/auth/entities/doctor.entity';
-import { Patient } from 'src/auth/entities/patient.entity';
-import { DoctorAvailability } from 'src/auth/entities/doctor-availability';
-import { DoctorTimeSlots } from 'src/auth/entities/doctor-time-slots';
+import { Doctor } from 'src/doctor/entities/doctor.entity';
+import { Patient } from 'src/patient/entities/patient.entity';
+import { DoctorAvailability } from 'src/doctor/entities/doctor-availability';
+import { DoctorTimeSlots } from 'src/doctor/entities/doctor-time-slots';
 export default registerAs  (
   'dbconfig.dev',
   ():PostgresConnectionOptions=>({
