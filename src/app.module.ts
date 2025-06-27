@@ -8,6 +8,7 @@ import { User } from './auth/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DoctorModule } from './doctor/doctor.module';
 import { PatientModule } from './patient/patient.module';
+import { HelloWorldModule } from './hello-world/hello-world.module';
 import dbConfigProduction from './config/db.config.production';
 import dbConfig from './config/db.config';
 @Module({
@@ -20,7 +21,8 @@ import dbConfig from './config/db.config';
       }),
       AuthModule,
       DoctorModule,
-      PatientModule
+      PatientModule,
+      HelloWorldModule
   ],
   
   controllers: [AppController],
