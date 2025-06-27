@@ -15,6 +15,10 @@ import jwtConfig from 'src/config/jwt.config';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
 import googleConfig from 'src/config/google.config';
 import { AuthModule } from 'src/auth/auth.module';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
+import { GoogleAuthGuard } from 'src/auth/guards/google-auth.guards';
+import { JwtRefreshGuard } from 'src/auth/guards/jwt-refresh.guards';
 
 @Module({
   providers: [DoctorService],
@@ -22,6 +26,7 @@ import { AuthModule } from 'src/auth/auth.module';
   imports: [
     TypeOrmModule.forFeature([Doctor, DoctorAvailability, DoctorTimeSlots]),
     AuthModule
+   
   ]
 
 })

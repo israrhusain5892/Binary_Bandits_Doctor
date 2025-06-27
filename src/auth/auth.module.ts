@@ -12,20 +12,28 @@ import refreshJwtConfig from 'src/config/refresh-jwt.config';
 import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import googleConfig from 'src/config/google.config';
+import { JwtAuthGuard } from './guards/jwt-auth.guards';
+import { RolesGuard } from './guards/roles.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guards';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guards';
+import { PassportModule } from '@nestjs/passport';
 
 
 @Module({
   providers: [AuthService, JwtService, JwtStrategy,RefreshJwtStrategy,
-    ConfigService,GoogleStrategy],
+    ConfigService,GoogleStrategy,JwtAuthGuard,RolesGuard,GoogleAuthGuard,JwtRefreshGuard
+  ],
   controllers: [AuthController],
   imports: [
     TypeOrmModule.forFeature([User]),
+     PassportModule.register({ defaultStrategy: 'jwt' }), 
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
-    ConfigModule.forFeature(googleConfig)
+    ConfigModule.forFeature(googleConfig),
+  
   ],
-  exports:[AuthService]
+  exports:[AuthService,JwtAuthGuard,RolesGuard]
 
 })
 export class AuthModule { }

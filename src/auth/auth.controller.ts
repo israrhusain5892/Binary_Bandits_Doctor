@@ -24,7 +24,7 @@ export class AuthController {
     return this.usersService.create(dto);
   }
 
-
+  
   @Post('signin')
   async login(@Body() dto: loginUserDto, @Res({ passthrough: true }) res: Response) {
     return await this.usersService.login(dto);
@@ -34,6 +34,8 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
   async refresh(@Req() req) {
+    console.log('Auth header:', req.headers.authorization);
+
     return await this.usersService.refreshToken(req.user.userId);
 
   }

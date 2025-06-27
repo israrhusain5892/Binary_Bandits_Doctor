@@ -8,7 +8,7 @@ import { DoctorAvailabilityDto } from './Dto/doctor-availability.dto';
 import { DoctorResponseDto } from './Dto/doctor-response.dto';
 import { CreateDoctorDto } from './Dto/create-doctor.dto';
 
-@Controller('api/v1/doctors')
+@Controller("api/v1/doctors")
 export class DoctorController {
 
     constructor(private readonly doctorService: DoctorService) { }
@@ -16,11 +16,10 @@ export class DoctorController {
 
 
      // create doctor
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+   @Post("profile")
   @Roles(Role.DOCTOR)
-  @Post("/profile")
-  async createDocotr(@Body() doctorDto: CreateDoctorDto): Promise<DoctorResponseDto> {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async createDoctor(@Body() doctorDto: CreateDoctorDto): Promise<DoctorResponseDto> {
     return this.doctorService.createDoctor(doctorDto);
   }
   //  serach doctor by name
