@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Doctor } from './entities/doctor.entity';
 import { DoctorTimeSlots } from './entities/doctor-time-slots';
@@ -16,7 +16,7 @@ import { AuthService } from 'src/auth/auth.service';
 export class DoctorService {
 
     constructor(
-       
+
         private readonly usersService: AuthService,
 
         @InjectRepository(Doctor)
@@ -33,10 +33,20 @@ export class DoctorService {
 
 
     async createDoctor(dto: CreateDoctorDto): Promise<DoctorResponseDto> {
-        const user = await this.usersService.findUserByUserId(dto.user_id)
+        const user = await this.usersService.findUserByUserId(dto.user_id);
+
 
         if (!user) {
             throw new NotFoundException('User not found');
+        }
+
+        const existingDoctor = await this.doctorRepo.findOne({
+            where: { user: { userId:dto.user_id } },
+            relations: ['user'], // required if you need to access user fields
+        });
+
+        if (existingDoctor) {
+            throw new ConflictException('Doctor already exists for this user');
         }
 
         const doctor = this.doctorRepo.create({
@@ -158,6 +168,23 @@ export class DoctorService {
         }
 
 
+        const { date, start_time, end_time } = availabilityDto;
+
+        // Check for existing availability that overlaps
+        const existingAvailability = await this.availabilityRepository.findOne({
+            where: {
+                doctor_id,
+                date,
+                start_time,
+                end_time
+            }
+        });
+
+        if (existingAvailability) {
+            throw new ConflictException("Availability already exists for the given time slot");
+        }
+
+
         const availability = this.availabilityRepository.create({
             ...availabilityDto,
             doctor,           // this sets up the relationship
@@ -199,7 +226,7 @@ export class DoctorService {
             const slotEnd = start.clone().add(slotDuration, 'minutes').format('HH:mm');
 
             // Prevent duplicates
-            const exists = await this.timeSlotsRepo.findOne({ 
+            const exists = await this.timeSlotsRepo.findOne({
                 where: {
                     doctor_id: doctorId,
                     date,
@@ -239,7 +266,8 @@ export class DoctorService {
             take: limit
         });
 
-        return { available_time_slots: slots };
+        const res={ available_time_slots: slots };
+        return res;
     }
 }
 
