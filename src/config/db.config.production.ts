@@ -15,7 +15,7 @@ export default (): PostgresConnectionOptions => ({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   entities: [User, Patient, Doctor, DoctorAvailability, DoctorTimeSlots,Appointment],
-  synchronize: true, // Set to false for production
+  synchronize: false, // Set to false for production
   ssl: true
 
 }
