@@ -6,6 +6,7 @@ import { Doctor } from 'src/doctor/entities/doctor.entity';
 import { Patient } from 'src/patient/entities/patient.entity';
 import { DoctorAvailability } from 'src/doctor/entities/doctor-availability';
 import { DoctorTimeSlots } from 'src/doctor/entities/doctor-time-slots';
+import { Appointment } from 'src/doctor/entities/Appointment';
 export default registerAs  (
   'dbconfig.dev',
   ():PostgresConnectionOptions=>({
@@ -15,7 +16,7 @@ export default registerAs  (
     username: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
-    entities: [User,Patient,Doctor,DoctorAvailability,DoctorTimeSlots],
+    entities: [User,Patient,Doctor,DoctorAvailability,DoctorTimeSlots,Appointment],
     synchronize: true,
   })
 

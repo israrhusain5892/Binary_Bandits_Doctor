@@ -99,7 +99,7 @@ export class AuthService {
 
 
   async validateJwtUser(userId: string) {
-    const user = this.userRepository.findOne({ where: { userId: userId } });
+    const user = await this.userRepository.findOne({ where: { userId: userId } });
     if (!user) {
       throw new NotFoundException("user not found by Id to validate");
     }

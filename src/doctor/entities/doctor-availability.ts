@@ -20,6 +20,7 @@ export class DoctorAvailability {
     session: string;
 
 
+
     @ManyToOne(() => Doctor, doctor => doctor.availabilities, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'doctor_id' })
     doctor: Doctor;

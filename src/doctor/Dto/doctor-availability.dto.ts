@@ -1,4 +1,4 @@
-import { IsDateString, IsString } from "class-validator";
+import { IsDateString, IsOptional, IsString } from "class-validator";
 
 export class DoctorAvailabilityDto {
   @IsDateString()
@@ -12,4 +12,10 @@ export class DoctorAvailabilityDto {
 
   @IsString()
   session: 'morning' | 'evening';
-}
+
+  @IsOptional()
+  slotsDuration:number;
+
+  @IsOptional()
+  max_bookings:number;
+} 

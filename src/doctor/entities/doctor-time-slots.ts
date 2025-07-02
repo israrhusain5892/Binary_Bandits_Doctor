@@ -19,8 +19,17 @@ export class DoctorTimeSlots {
     @Column({ default: true })
     is_available: boolean;
 
+    @Column({default:"Morning"})
+    session: string;
+
     @CreateDateColumn()
     created_at: Date;
+
+    @Column({ default: 0 })
+    current_bookings: number;
+
+    @Column({ default: 3 }) // only for wave scheduling
+    max_bookings: number;
 
     @ManyToOne(() => Doctor, doctor => doctor.timeSlots, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'doctor_id' })

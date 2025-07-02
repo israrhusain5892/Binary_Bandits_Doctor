@@ -11,7 +11,7 @@ import { PatientModule } from './patient/patient.module';
 import { HelloWorldModule } from './hello-world/hello-world.module';
 import dbConfigProduction from './config/db.config.production';
 import dbConfig from './config/db.config';
-@Module({
+@Module({  
 
   imports: [
     ConfigModule.forRoot({ isGlobal: true,expandVariables:true,load:[dbConfig,dbConfigProduction] }),
@@ -28,4 +28,4 @@ import dbConfig from './config/db.config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {} 

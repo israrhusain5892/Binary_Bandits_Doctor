@@ -1,5 +1,6 @@
 
 import { User } from 'src/auth/entities/user.entity';
+import { Appointment } from 'src/doctor/entities/Appointment';
 import { DoctorAvailability } from 'src/doctor/entities/doctor-availability';
 import { DoctorTimeSlots } from 'src/doctor/entities/doctor-time-slots';
 import { Doctor } from 'src/doctor/entities/doctor.entity';
@@ -13,8 +14,8 @@ export default (): PostgresConnectionOptions => ({
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  entities: [User, Patient, Doctor, DoctorAvailability, DoctorTimeSlots],
-  synchronize: false, // Set to false for production
+  entities: [User, Patient, Doctor, DoctorAvailability, DoctorTimeSlots,Appointment],
+  synchronize: true, // Set to false for production
   ssl: true
 
 }
